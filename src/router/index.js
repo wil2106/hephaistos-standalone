@@ -1,45 +1,48 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
-import PageNotFound from '../views/PageNotFound.vue'
-import Exercise from '../views/Exercise.vue'
+import Home from '../views/Home.vue'
+import Module from '../views/Module.vue'
+import Session from '../views/Session.vue'
+import store from '../store/index'
 
 Vue.use(VueRouter)
 
+async function beforeEnter (_to, _from, next) {
+  if (!store.getters['user/isAuthenticated']) {
+    await store.dispatch('user/fetchUser')
+  }
+  if (store.getters['user/isAuthenticated']) {
+    next()
+    return
+  }
+  next('/login')
+}
+
 const routes = [
   {
-    path: '/',
+    path: '/login',
     name: 'Login',
     component: Login
   },
   {
-    path: '*',
-    component: PageNotFound
-  },
-  {
-    path: '/home',
+    path: '/',
     name: 'Home',
-    component: Home
-    /*
-    get component () {
-      if (Vue.prototype.$session.connected) {
-        return Home
-      } else {
-        return Login
-      }
-    }
-    */
+    component: Home,
+    beforeEnter
   },
   {
-    path: '/exercise',
-    name: 'Exercise',
-    component: Exercise
+    path: '/module/:id',
+    name: 'Module',
+    component: Module,
+    beforeEnter
+  },
+  {
+    path: '/session/:id',
+    name: 'Session',
+    component: Session,
+    beforeEnter
   }
 ]
 
-const router = new VueRouter({
-  routes
-})
-
-export default router
+export default new VueRouter({ routes })
